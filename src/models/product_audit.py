@@ -11,9 +11,9 @@ class ProductAudit(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    field_name = Column(String, nullable=False, description="Name of the field that changed")
-    old_value = Column(String, nullable=True, description="Previous value")
-    new_value = Column(String, nullable=True, description="New value")
-    change_type = Column(String, nullable=False, description="Type: create, update, delete")
+    field_name = Column(String, nullable=False)
+    old_value = Column(String, nullable=True)
+    new_value = Column(String, nullable=True)
+    change_type = Column(String, nullable=False)
     changed_at = Column(DateTime(timezone=True), server_default=func.now())
 

@@ -25,9 +25,10 @@ class ProductService:
     def _validate_name_not_forbidden(self, name: str):
         """Check if product name contains forbidden phrases"""
         forbidden_phrases = self.forbidden_phrase_repo.find_all_phrases()
-        for phrase in forbidden_phrases:
-            if phrase.lower() in name.lower():
-                raise ValueError(f'Product name contains forbidden phrase: "{phrase}"')
+        for phrase_obj in forbidden_phrases:
+            phrase_text = phrase_obj.phrase if hasattr(phrase_obj, 'phrase') else str(phrase_obj)
+            if phrase_text.lower() in name.lower():
+                raise ValueError(f'Product name contains forbidden phrase: "{phrase_text}"')
     
     def _validate_price_range(self, price: float, category_id: int):
         """Validate price is within category limits"""
@@ -62,7 +63,7 @@ class ProductService:
         
         self._validate_price_range(product_data.price, product_data.category_id)
         
-        new_product = Product(**product_data.dict())
+        new_product = Product(**product_data.model_dump())
         created_product = self.product_repo.create(new_product)
         
         self._log_change(created_product.id, 'product', None, 'create', 'CREATE')
@@ -75,7 +76,7 @@ class ProductService:
         if not product:
             return None
         
-        update_dict = product_data.dict(exclude_unset=True)
+        update_dict = product_data.model_dump(exclude_unset=True)
         
         if 'name' in update_dict:
             self._validate_name_not_forbidden(update_dict['name'])
@@ -98,9 +99,21 @@ class ProductService:
         if not product:
             return False
         
-        self.product_repo.delete(product)
-        
         self._log_change(product.id, 'product', None, None, 'DELETE')
+        
+        from src.database import SessionLocal
+        db = SessionLocal()
+        try:
+            from src.models.product_audit import ProductAudit
+            db.query(ProductAudit).filter(ProductAudit.product_id == product_id).delete()
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+        
+        self.product_repo.delete(product)
         
         return True
     

@@ -3,14 +3,12 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Database settings
     postgres_user: str = "fastapi_user"
     postgres_password: str = "fastapi_password"
     postgres_db: str = "fastapi_db"
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     
-    # Application settings
     app_name: str = "FastAPI Project"
     debug: bool = True
     environment: str = "development"
@@ -22,6 +20,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 @lru_cache()

@@ -5,8 +5,11 @@ from src.api import api_router
 
 app = FastAPI(
     title="ZTP Lab 01",
-    description="Zadanie 1",
-    version="1.0.0"
+    description="Zadanie 1 - Product Management System with Audit Trail",
+    version="1.0.0",
+    docs_url="/docs", 
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
 app.add_middleware(

@@ -12,10 +12,9 @@ class ForbiddenPhraseRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def find_all_phrases(self) -> List[str]:
-        """Get all forbidden phrases as list of strings"""
-        phrases = self.db.query(ForbiddenPhrase).all()
-        return [phrase.phrase for phrase in phrases]
+    def find_all_phrases(self) -> List[ForbiddenPhrase]:
+        """Get all forbidden phrases as list of ForbiddenPhrase objects"""
+        return self.db.query(ForbiddenPhrase).all()
     
     def create(self, phrase: str) -> ForbiddenPhrase:
         """Add new forbidden phrase"""

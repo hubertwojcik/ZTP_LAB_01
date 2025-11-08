@@ -52,6 +52,10 @@ def update_product(product_id: int, product: ProductUpdate, service: ProductServ
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(product_id: int, service: ProductService = Depends(get_product_service)):
     """Delete a product"""
-    if not service.delete_product(product_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-    return None
+    try:
+        if not service.delete_product(product_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

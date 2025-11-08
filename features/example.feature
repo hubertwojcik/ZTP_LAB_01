@@ -1,11 +1,10 @@
-Feature: Example Feature
-  As a developer
-  I want to test the application
-  So that I can verify it works correctly
+Feature: Przykładowa funkcjonalność
+  Jako programista
+  Chcę przetestować aplikację
+  Aby móc zweryfikować że działa poprawnie
 
-  Scenario: Check application health
-    Given the application is running
-    When I check the health endpoint
-    Then the response status should be 200
-    And the response should contain "healthy"
-
+  Scenario: Sprawdzenie zdrowia aplikacji
+    Given API jest dostępne pod adresem "http://localhost:8000"
+    When sprawdzam endpoint health
+    Then status odpowiedzi powinien być 200
+    And odpowiedź powinna zawierać "healthy"

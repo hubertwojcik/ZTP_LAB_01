@@ -1,37 +1,71 @@
-.PHONY: help install dev-up dev-down test clean
+.PHONY: help up down restart logs clean build test init
 
 help:
 	@echo "Available commands:"
-	@echo "  make install      - Install Python dependencies"
-	@echo "  make dev-up       - Start PostgreSQL in Docker"
-	@echo "  make dev-down     - Stop PostgreSQL in Docker"
-	@echo "  make run          - Run the FastAPI application"
-	@echo "  make test         - Run Behave tests"
-	@echo "  make clean        - Clean up generated files"
-	@echo "  make init-db      - Initialize database with Alembic"
+	@echo "  make up       - Start all services (PostgreSQL + FastAPI)"
+	@echo "  make down     - Stop all services"
+	@echo "  make restart  - Restart all services"
+	@echo "  make logs     - View logs from all services"
+	@echo "  make build    - Rebuild Docker images"
+	@echo "  make test     - Run integration tests (Behave)"
+	@echo "  make clean    - Clean up generated files and volumes"
+	@echo "  make init     - First-time setup (clean, build, up, migrate)"
+	@echo ""
+	@echo "Application will be available at: http://localhost:8000"
+	@echo "Swagger docs at: http://localhost:8000/docs"
+	@echo ""
+	@echo "First time setup:"
+	@echo "  1. make init"
+	@echo "  2. make test"
 
-install:
-	pip install -r requirements.txt
-
-dev-up:
+up:
 	docker-compose up -d
+	@echo "✅ Services are starting up!"
+	@echo "🌐 FastAPI will be available at http://localhost:8000"
+	@echo "📚 Swagger docs at http://localhost:8000/docs"
+	@echo "Use 'make logs' to see the logs"
 
-dev-down:
+down:
 	docker-compose down
 
-run:
-	uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+restart:
+	docker-compose restart
+
+logs:
+	docker-compose logs -f
+
+build:
+	docker-compose build --no-cache
 
 test:
-	behave
+	@echo "Running integration tests..."
+	@docker-compose exec -T fastapi behave --no-capture --quiet --summary 2>&1 | tail -5 || python3 -m behave --no-capture --quiet --summary 2>&1 | tail -5
 
 clean:
-	find . -type d -name __pycache__ -exec rm -r {} +
-	find . -type f -name "*.pyc" -delete
-	find . -type f -name "*.pyo" -delete
-	find . -type d -name "*.egg-info" -exec rm -r {} +
+	docker-compose down -v
+	find . -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -r {} + 2>/dev/null || true
 
-init-db:
-	alembic revision --autogenerate -m "Initial migration"
-	alembic upgrade head
-
+init:
+	@echo "🚀 First-time setup..."
+	@echo "1. Cleaning up..."
+	@docker-compose down -v 2>/dev/null || true
+	@echo "2. Creating alembic/versions directory..."
+	@mkdir -p alembic/versions
+	@echo "3. Building Docker images..."
+	@docker-compose build --no-cache
+	@echo "4. Starting services..."
+	@docker-compose up -d
+	@echo "5. Waiting for services to be ready..."
+	@sleep 5
+	@echo "6. Creating database migration..."
+	@docker-compose exec -T fastapi alembic revision --autogenerate -m "Initial migration" || true
+	@echo "7. Applying migration..."
+	@docker-compose exec -T fastapi alembic upgrade head
+	@echo ""
+	@echo "✅ Setup complete!"
+	@echo "🌐 FastAPI: http://localhost:8000"
+	@echo "📚 Swagger: http://localhost:8000/docs"
+	@echo "🧪 Run tests: make test"
