@@ -1,163 +1,201 @@
-# ZTP_LAB_01
+# ZTP LAB 01 - System Zarządzania Produktami
 
-FastAPI project with PostgreSQL database, Docker Compose, and Behave testing framework.
+## 📋 O Projekcie
 
-## Quick Start 🚀
+System zarządzania produktami zbudowany w **FastAPI** z bazą danych **PostgreSQL**. Projekt implementuje pełny CRUD dla produktów i kategorii, z automatycznym śledzeniem zmian (audit trail) oraz walidacją zawartości (zakazane frazy).
 
-### Instalacja od zera (krok po kroku)
+### Główne Funkcjonalności
 
-**1. Zatrzymaj i usuń wszystkie kontenery i wolumeny (jeśli istnieją):**
+✅ **Zarządzanie Produktami** - CRUD z walidacją nazwy, ceny, ilości  
+✅ **Zarządzanie Kategoriami** - Kategorie z zakresami cenowymi  
+✅ **Zakazane Frazy** - Moderacja treści w nazwach produktów  
+✅ **Audit Trail** - Automatyczne logowanie wszystkich zmian produktów  
+✅ **Walidacja Biznesowa** - Sprawdzanie zakresów cenowych, unikalności, formatów  
+✅ **Testy BDD** - Kompleksowe testy integracyjne z frameworkiem Behave
 
-```bash
-make clean
-```
+---
 
-**2. Utwórz katalog na migracje (jeśli nie istnieje):**
-
-```bash
-mkdir -p alembic/versions
-```
-
-**3. Zbuduj obrazy Docker:**
-
-```bash
-make build
-```
-
-**4. Uruchom serwisy (PostgreSQL + FastAPI):**
-
-```bash
-make up
-```
-
-**5. Poczekaj kilka sekund, aż serwisy się uruchomią, a następnie zastosuj migracje bazy danych:**
-
-```bash
-docker-compose exec fastapi alembic revision --autogenerate -m "Initial migration"
-docker-compose exec fastapi alembic upgrade head
-```
-
-**6. Sprawdź, czy wszystko działa:**
-
-```bash
-# Sprawdź status serwisów
-docker-compose ps
-
-# Uruchom testy
-make test
-```
-
-**7. Sprawdź aplikację:**
-
-- API: `http://localhost:8000`
-- Swagger docs: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
-
-### Szybki start (jeśli wszystko już jest skonfigurowane)
-
-```bash
-make up
-```
-
-The application will be available at `http://localhost:8000`  
-Swagger docs: `http://localhost:8000/docs`
-
-## Project Structure
+## 🏗️ Struktura Projektu
 
 ```
 .
-├── src/                    # Application source code
-│   ├── api/               # API endpoints
-│   ├── models/            # SQLAlchemy models
-│   ├── schemas/           # Pydantic schemas
-│   ├── repositories/      # Data access layer
-│   ├── services/          # Business logic layer
-│   ├── main.py            # FastAPI application entry point
-│   ├── config.py          # Configuration management
-│   └── database.py        # Database connection and session management
-├── features/              # Behave BDD tests
-├── alembic/              # Database migrations
-├── docker-compose.yml    # Docker Compose configuration
-├── Dockerfile            # Python application container
-├── requirements.txt      # Python dependencies
-├── behave.ini            # Behave configuration
-└── Makefile             # Useful commands
+├── src/                          # Kod źródłowy aplikacji
+│   ├── api/                      # Endpointy REST API
+│   │   ├── products.py          # Endpointy produktów
+│   │   ├── product_category.py  # Endpointy kategorii
+│   │   ├── forbidden_phrases.py # Endpointy zakazanych fraz
+│   │   └── product_audit.py     # Endpointy historii zmian
+│   ├── models/                   # Modele SQLAlchemy (baza danych)
+│   │   ├── product.py
+│   │   ├── product_category.py
+│   │   ├── forbidden_phrase.py
+│   │   └── product_audit.py
+│   ├── schemas/                  # Schematy Pydantic (walidacja)
+│   ├── repositories/             # Warstwa dostępu do danych
+│   ├── services/                 # Logika biznesowa
+│   ├── main.py                   # Punkt wejścia FastAPI
+│   ├── config.py                 # Konfiguracja
+│   └── database.py               # Połączenie z bazą danych
+│
+├── features/                      # Testy BDD (Behave)
+│   ├── product_management.feature
+│   ├── category_management.feature
+│   ├── forbidden_phrases.feature
+│   ├── audit_trail.feature
+│   └── steps/                    # Implementacje kroków testowych
+│
+├── alembic/                      # Migracje bazy danych
+├── docker-compose.yml            # Konfiguracja Docker Compose
+├── Dockerfile                    # Obraz Docker dla aplikacji
+├── Makefile                      # Przydatne komendy
+└── requirements.txt              # Zależności Python
 ```
 
-## Setup with Docker (Recommended)
+---
 
-### 1. Start all services
+## 🚀 Szybki Start
+
+### Pierwsza Instalacja
 
 ```bash
-make up
+# 1. Pełna inicjalizacja (czyści, buduje, uruchamia, migruje)
+make init
+
+# 2. Uruchom testy
+make test
 ```
 
-This will:
-
-- Start PostgreSQL database
-- Build and start FastAPI application
-- Wait for database to be ready
-- Mount source code for hot-reload
-
-### 2. View logs
+### Podstawowe Komendy
 
 ```bash
-make logs
+make up      # Uruchom serwisy (PostgreSQL + FastAPI)
+make down    # Zatrzymaj serwisy
+make logs    # Zobacz logi
+make test    # Uruchom testy integracyjne
+make clean   # Wyczyść wszystko (wolumeny, cache)
 ```
 
-### 3. Stop all services
+### Dostęp do Aplikacji
+
+- **API**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
+
+---
+
+## 📍 Gdzie Co Znajduje Się?
+
+### **API Endpointy** (`src/api/`)
+
+- `products.py` - Operacje na produktach (GET, POST, PUT, DELETE)
+- `product_category.py` - Operacje na kategoriach
+- `forbidden_phrases.py` - Zarządzanie zakazanymi frazami
+- `product_audit.py` - Historia zmian produktów
+
+### **Modele Bazy Danych** (`src/models/`)
+
+- `product.py` - Tabela produktów (id, name, price, quantity, category_id)
+- `product_category.py` - Tabela kategorii (name, min_price, max_price)
+- `forbidden_phrase.py` - Tabela zakazanych fraz
+- `product_audit.py` - Tabela historii zmian (audit trail)
+
+### **Logika Biznesowa** (`src/services/`)
+
+- `product_service.py` - Walidacja, tworzenie, aktualizacja produktów
+  - Sprawdzanie zakazanych fraz w nazwach
+  - Walidacja zakresów cenowych kategorii
+  - Automatyczne logowanie zmian do audit trail
+
+### **Testy** (`features/`)
+
+- `product_management.feature` - Testy CRUD produktów
+- `category_management.feature` - Testy kategorii
+- `forbidden_phrases.feature` - Testy moderacji treści
+- `audit_trail.feature` - Testy historii zmian
+
+### **Migracje** (`alembic/`)
+
+- `versions/` - Pliki migracji bazy danych
+- `env.py` - Konfiguracja Alembic
+
+---
+
+## 🔑 Kluczowe Funkcjonalności do Opisania
+
+### 1. **Walidacja Produktów**
+
+- Nazwa: 3-100 znaków, unikalna, bez zakazanych fraz
+- Cena: dodatnia, w zakresie kategorii (min_price - max_price)
+- Ilość: nieujemna liczba całkowita
+- Kategoria: musi istnieć w bazie
+
+### 2. **Audit Trail**
+
+- Automatyczne logowanie: CREATE, UPDATE, DELETE
+- Przechowywanie: stara wartość, nowa wartość, timestamp, typ operacji
+- Dostęp przez API: `/api/v1/products/{id}/history`
+
+### 3. **Zakazane Frazy**
+
+- Lista fraz niedozwolonych w nazwach produktów
+- Sprawdzanie przy tworzeniu i aktualizacji
+- Zwraca błąd 400 z informacją o znalezionej frazie
+
+### 4. **Architektura**
+
+- **3-warstwowa**: API → Service → Repository
+- **Repository Pattern** - izolacja dostępu do danych
+- **Service Layer** - logika biznesowa i walidacja
+- **Dependency Injection** - FastAPI Depends()
+
+---
+
+## 🧪 Testy
+
+Projekt zawiera kompleksowe testy integracyjne używające **Behave (BDD)**:
 
 ```bash
-make down
+make test  # Uruchom wszystkie testy
 ```
 
-## Available Commands
+Testy sprawdzają:
 
-| Command        | Description                               |
-| -------------- | ----------------------------------------- |
-| `make up`      | Start all services (PostgreSQL + FastAPI) |
-| `make down`    | Stop all services                         |
-| `make restart` | Restart all services                      |
-| `make logs`    | View logs from all services               |
-| `make build`   | Rebuild Docker images                     |
-| `make clean`   | Clean up generated files and volumes      |
+- ✅ Wszystkie operacje CRUD
+- ✅ Walidację danych wejściowych
+- ✅ Działanie zakazanych fraz
+- ✅ Audit trail (historia zmian)
+- ✅ Walidację zakresów cenowych
 
-## Application Endpoints
+---
 
-Once running, the application provides:
+## 🛠️ Technologie
 
-- **Products**: `/api/v1/products` - Product management
-- **Categories**: `/api/v1/categories` - Category management
-- **Forbidden Phrases**: `/api/v1/forbidden-phrases` - Forbidden phrase management
-- **Audit History**: `/api/v1/products/{id}/history` - Product change history
-- **Swagger UI**: `/docs` - Interactive API documentation
-- **ReDoc**: `/redoc` - Alternative API documentation
+- **FastAPI** - Framework webowy
+- **PostgreSQL** - Baza danych
+- **SQLAlchemy** - ORM
+- **Pydantic** - Walidacja danych
+- **Alembic** - Migracje bazy danych
+- **Docker & Docker Compose** - Konteneryzacja
+- **Behave** - Testy BDD
 
-## Features
+---
 
-✅ **RESTful API** - Full CRUD operations  
-✅ **Input Validation** - Pydantic schemas with detailed error messages  
-✅ **Database Audit Trail** - Automatic tracking of product changes  
-✅ **Forbidden Phrases** - Content moderation on product names  
-✅ **Price Range Validation** - Category-based price constraints  
-✅ **Swagger Documentation** - Auto-generated API docs  
-✅ **Docker Support** - Complete containerization
+## 📝 Przykłady Użycia API
 
-## API Request/Response Examples
-
-### Create a Category
+### Utworzenie Kategorii
 
 ```bash
 POST /api/v1/categories
 {
-  "name": "Electronics",
-  "description": "Electronic devices and accessories",
+  "name": "Elektronika",
+  "description": "Urządzenia elektroniczne",
   "min_price": 10.0,
   "max_price": 5000.0
 }
 ```
 
-### Create a Product
+### Utworzenie Produktu
 
 ```bash
 POST /api/v1/products
@@ -169,137 +207,38 @@ POST /api/v1/products
 }
 ```
 
-## Database Migrations
-
-### Pierwsza instalacja
-
-Przy pierwszej instalacji musisz utworzyć migracje:
+### Historia Zmian Produktu
 
 ```bash
-# 1. Utwórz katalog na migracje (jeśli nie istnieje)
-mkdir -p alembic/versions
-
-# 2. Wygeneruj migrację na podstawie modeli
-docker-compose exec fastapi alembic revision --autogenerate -m "Initial migration"
-
-# 3. Zastosuj migrację
-docker-compose exec fastapi alembic upgrade head
+GET /api/v1/products/1/history
 ```
 
-### Tworzenie nowych migracji
+---
 
-Gdy zmieniasz modele, utwórz nową migrację:
+## 💡 Jak Opowiedzieć o Projekcie?
 
-```bash
-docker-compose exec fastapi alembic revision --autogenerate -m "Your migration message"
-docker-compose exec fastapi alembic upgrade head
-```
+1. **Co to jest?** - System zarządzania produktami z REST API
+2. **Architektura** - 3-warstwowa (API, Service, Repository), FastAPI + PostgreSQL
+3. **Funkcjonalności** - CRUD, walidacja, audit trail, moderacja treści
+4. **Testy** - Kompleksowe testy BDD pokrywające wszystkie wymagania
+5. **Docker** - Pełna konteneryzacja, łatwe uruchomienie jednym poleceniem
+6. **Jakość kodu** - Separacja odpowiedzialności, dependency injection, wzorce projektowe
 
-### Sprawdzanie statusu migracji
+---
 
-```bash
-# Zobacz aktualną wersję
-docker-compose exec fastapi alembic current
-
-# Zobacz historię migracji
-docker-compose exec fastapi alembic history
-```
-
-## Configuration
-
-Environment variables are managed through:
-
-- Docker Compose environment variables
-- `.env` file (optional, for local development)
-
-Default database credentials:
-
-- User: `fastapi_user`
-- Password: `fastapi_password`
-- Database: `fastapi_db`
-- Host: `postgres` (inside Docker network)
-
-## Testing with Behave
-
-The project includes comprehensive integration tests that verify all business requirements through HTTP API calls.
-
-### Test Coverage
-
-The test suite covers all business requirements:
-
-✅ **Product Management**
-
-- Creating products with validation
-- Name validation (length, format, uniqueness, forbidden phrases)
-- Price validation (positive, within category range)
-- Quantity validation (non-negative)
-- Category existence validation
-- CRUD operations
-
-✅ **Category Management**
-
-- Creating categories with price constraints
-- Name uniqueness validation
-- Price range validation (max > min)
-
-✅ **Forbidden Phrases**
-
-- Creating and managing forbidden phrases
-- Product name validation against forbidden phrases
-
-✅ **Audit Trail**
-
-- Automatic logging of product changes (CREATE, UPDATE, DELETE)
-- History retrieval and validation
-
-### Running Tests
-
-Run all integration tests:
+## 🔧 Rozwiązywanie Problemów
 
 ```bash
-make test
-```
+# Aplikacja nie startuje
+make logs      # Sprawdź logi
+make restart   # Zrestartuj
 
-Or run tests directly:
+# Problemy z bazą danych
+make down      # Zatrzymaj wszystko
+make up        # Uruchom od nowa
 
-```bash
-# Inside Docker container
-docker-compose exec fastapi behave
-
-# Or locally (if API is running)
-python3 -m behave
-```
-
-### Test Structure
-
-- `features/product_management.feature` - Product CRUD and validation tests
-- `features/category_management.feature` - Category management tests
-- `features/forbidden_phrases.feature` - Forbidden phrase tests
-- `features/audit_trail.feature` - Audit trail verification tests
-- `features/steps/` - Step definitions implementing HTTP API calls
-
-All tests communicate with the API through HTTP requests using the `requests` library.
-
-## Troubleshooting
-
-### Application won't start
-
-```bash
-make logs  # Check logs for errors
-make restart  # Try restarting
-```
-
-### Database connection issues
-
-```bash
-make down  # Stop everything
-make up  # Start fresh
-```
-
-### Rebuild from scratch
-
-```bash
-make clean  # Remove volumes and cache
-make build  # Rebuild images
-make up  # Start services
+# Pełny reset
+make clean     # Usuń wolumeny i cache
+make build     # Przebuduj obrazy
+make up        # Uruchom
 ```
