@@ -22,12 +22,11 @@ def get_forbidden_phrases(repository: ForbiddenPhraseRepository = Depends(get_fo
 def create_forbidden_phrase(forbidden_phrase: ForbiddenPhraseCreate, repository: ForbiddenPhraseRepository = Depends(get_forbidden_phrase_repository)):
     """Create a new forbidden phrase"""
     try:
-        # Check if phrase already exists
+        
         existing_phrase = repository.find_by_phrase(forbidden_phrase.phrase)
         if existing_phrase:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Forbidden phrase already exists")
-        
-        # Create new phrase
+                
         created_phrase = repository.create(forbidden_phrase.phrase)
         return created_phrase
     except ValueError as e:
