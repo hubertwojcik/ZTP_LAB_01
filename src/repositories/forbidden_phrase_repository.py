@@ -2,7 +2,8 @@
 Data Access Layer - Forbidden Phrase Repository
 """
 from sqlalchemy.orm import Session
-from typing import List
+from sqlalchemy.exc import IntegrityError
+from typing import List, Optional
 from src.models.forbidden_phrase import ForbiddenPhrase
 
 
@@ -18,13 +19,20 @@ class ForbiddenPhraseRepository:
     
     def create(self, phrase: str) -> ForbiddenPhrase:
         """Add new forbidden phrase"""
-        new_phrase = ForbiddenPhrase(phrase=phrase)
-        self.db.add(new_phrase)
-        self.db.commit()
-        self.db.refresh(new_phrase)
-        return new_phrase
+        try:
+            new_phrase = ForbiddenPhrase(phrase=phrase)
+            self.db.add(new_phrase)
+            self.db.commit()
+            self.db.refresh(new_phrase)
+            return new_phrase
+        except IntegrityError as e:
+            self.db.rollback()
+            raise ValueError(f"Forbidden phrase already exists or database error: {str(e)}")
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Error creating forbidden phrase: {str(e)}")
     
-    def find_by_phrase(self, phrase: str) -> ForbiddenPhrase:
+    def find_by_phrase(self, phrase: str) -> Optional[ForbiddenPhrase]:
         """Find phrase by text"""
         return self.db.query(ForbiddenPhrase).filter(ForbiddenPhrase.phrase == phrase).first()
 
